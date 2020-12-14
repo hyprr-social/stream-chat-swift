@@ -247,11 +247,9 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
         }
 
         suggestionsWindow?.translatesAutoresizingMaskIntoConstraints = false
-//        suggestionsWindow?.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-//        suggestionsWindow?.heightAnchor.constraint(equalToConstant: 200).isActive = true
         suggestionsWindow?.frame = .init(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 190)
         suggestionsWindow?.setNeedsLayout()
-        suggestionsWindow?.backgroundColor = .green
+        suggestionsWindow?.backgroundColor = .clear
         suggestionsWindow?.rootViewController = suggestionsViewController // UIViewController()
         suggestionsWindow?.rootViewController?.view.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width)
             .isActive = true
@@ -260,12 +258,7 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
         suggestionsWindow?.windowLevel = .alert + 1
         suggestionsWindow?.makeKeyAndVisible()
 
-//        suggestionsWindow?.rootViewController?.addChild(suggestionsViewController)
-//        suggestionsWindow?.rootViewController?.view.addSubview(suggestionsViewController.view)
-//        suggestionsViewController.didMove(toParent: suggestionsWindow?.rootViewController!)
-
         done.toggle()
-
 //        guard let parent = parent else { return }
 //        parent.addChild(suggestionsViewController)
 //        parent.view.addSubview(suggestionsViewController.view)

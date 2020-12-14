@@ -14,6 +14,22 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
     // MARK: - Property
 
     private var collectionViewHeightObserver: NSKeyValueObservation?
+    private var frameObserver: NSKeyValueObservation?
+
+    public var bottomAnchorView: UIView? {
+        didSet {
+            frameObserver = bottomAnchorView?.observe(
+                \.frame,
+                options: [.new],
+                changeHandler: { [weak self] _, change in
+                    DispatchQueue.main.async {
+                        guard let self = self, let newFrame = change.newValue else { return }
+                        self.view.window?.frame = newFrame.insetBy(dx: 0, dy: -10)
+                    }
+                }
+            )
+        }
+    }
 
     // MARK: - Subviews
 
