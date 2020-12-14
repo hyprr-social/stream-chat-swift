@@ -79,7 +79,7 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
         setUpLayout()
         updateContent()
     }
-    
+
     open func setUp() {
         setupInputView()
         observeSizeChanges()
@@ -230,6 +230,8 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
     
     // MARK: Suggestions
 
+    var windowObserver: NSKeyValueObservation?
+
     func showSuggestionsViewController() {
         guard suggestionsWindow == nil else { return }
 
@@ -245,18 +247,20 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
             suggestionsWindow = NoKeyWindow(frame: .zero)
         }
 
-        suggestionsViewController.bottomAnchorView = composerView
+        suggestionsViewController.bottomAnchorView = inputView
         
         suggestionsWindow?.translatesAutoresizingMaskIntoConstraints = false
-        suggestionsWindow?.frame = .init(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 190)
+        suggestionsWindow?.frame = .init(x: 0, y: 0, width: UIScreen.main.bounds.width - 16, height: 190)
         suggestionsWindow?.setNeedsLayout()
         suggestionsWindow?.backgroundColor = .clear
-        suggestionsWindow?.rootViewController = suggestionsViewController // UIViewController()
-        suggestionsWindow?.rootViewController?.view.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width)
-            .isActive = true
-        suggestionsWindow?.rootViewController?.view.heightAnchor.constraint(equalToConstant: 190).isActive = true
+        suggestionsWindow?.rootViewController = suggestionsViewController
+        suggestionsWindow?.rootViewController?.view.widthAnchor.constraint(
+            equalToConstant: UIScreen.main.bounds.width
+        )
+        .isActive = true
 
-        suggestionsWindow?.windowLevel = .alert + 1
+        suggestionsWindow?.canResizeToFitContent = true
+        suggestionsWindow?.windowLevel = UIWindow.Level.alert
         suggestionsWindow?.makeKeyAndVisible()
     }
 
