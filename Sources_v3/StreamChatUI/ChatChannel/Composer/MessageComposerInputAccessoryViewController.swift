@@ -230,9 +230,8 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
     
     // MARK: Suggestions
 
-    var done = false
     func showSuggestionsViewController() {
-        guard !done else { return }
+        guard suggestionsWindow == nil else { return }
 
         if #available(iOS 13.0, *) {
             let windowScene = UIApplication.shared
@@ -246,6 +245,8 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
             suggestionsWindow = NoKeyWindow(frame: .zero)
         }
 
+        suggestionsViewController.bottomAnchorView = composerView
+        
         suggestionsWindow?.translatesAutoresizingMaskIntoConstraints = false
         suggestionsWindow?.frame = .init(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 190)
         suggestionsWindow?.setNeedsLayout()
@@ -257,18 +258,6 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
 
         suggestionsWindow?.windowLevel = .alert + 1
         suggestionsWindow?.makeKeyAndVisible()
-
-        done.toggle()
-//        guard let parent = parent else { return }
-//        parent.addChild(suggestionsViewController)
-//        parent.view.addSubview(suggestionsViewController.view)
-//        suggestionsViewController.didMove(toParent: parent)
-
-//        guard let suggestionView = suggestionsViewController.view else { return }
-//        suggestionView.bottomAnchor.constraint(equalTo: composerView.topAnchor).isActive = true
-//        suggestionView.centerXAnchor.constraint(equalTo: composerView.centerXAnchor).isActive = true
-//        suggestionView.leadingAnchor.constraint(equalTo: composerView.layoutMarginsGuide.leadingAnchor).isActive = true
-//        suggestionView.trailingAnchor.constraint(equalTo: composerView.layoutMarginsGuide.trailingAnchor).isActive = true
     }
 
     func dismissSuggestionsViewController() {
