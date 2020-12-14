@@ -65,6 +65,8 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
         picker.delegate = self
         return picker
     }()
+
+    private var suggestionsWindow: NoKeyWindow?
     
     // MARK: Setup
     
@@ -227,18 +229,53 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
     }
     
     // MARK: Suggestions
-    
-    func showSuggestionsViewController() {
-        guard let parent = parent else { return }
-        parent.addChild(suggestionsViewController)
-        parent.view.addSubview(suggestionsViewController.view)
-        suggestionsViewController.didMove(toParent: parent)
 
-        guard let suggestionView = suggestionsViewController.view else { return }
-        suggestionView.bottomAnchor.constraint(equalTo: composerView.topAnchor).isActive = true
-        suggestionView.centerXAnchor.constraint(equalTo: composerView.centerXAnchor).isActive = true
-        suggestionView.leadingAnchor.constraint(equalTo: composerView.layoutMarginsGuide.leadingAnchor).isActive = true
-        suggestionView.trailingAnchor.constraint(equalTo: composerView.layoutMarginsGuide.trailingAnchor).isActive = true
+    var done = false
+    func showSuggestionsViewController() {
+        guard !done else { return }
+
+        if #available(iOS 13.0, *) {
+            let windowScene = UIApplication.shared
+                .connectedScenes
+                .first(where: { $0.activationState == .foregroundActive })
+
+            if let windowScene = windowScene as? UIWindowScene {
+                suggestionsWindow = NoKeyWindow(windowScene: windowScene)
+            }
+        } else {
+            suggestionsWindow = NoKeyWindow(frame: .zero)
+        }
+
+        suggestionsWindow?.translatesAutoresizingMaskIntoConstraints = false
+//        suggestionsWindow?.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+//        suggestionsWindow?.heightAnchor.constraint(equalToConstant: 200).isActive = true
+        suggestionsWindow?.frame = .init(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 190)
+        suggestionsWindow?.setNeedsLayout()
+        suggestionsWindow?.backgroundColor = .green
+        suggestionsWindow?.rootViewController = suggestionsViewController // UIViewController()
+        suggestionsWindow?.rootViewController?.view.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width)
+            .isActive = true
+        suggestionsWindow?.rootViewController?.view.heightAnchor.constraint(equalToConstant: 190).isActive = true
+
+        suggestionsWindow?.windowLevel = .alert + 1
+        suggestionsWindow?.makeKeyAndVisible()
+
+//        suggestionsWindow?.rootViewController?.addChild(suggestionsViewController)
+//        suggestionsWindow?.rootViewController?.view.addSubview(suggestionsViewController.view)
+//        suggestionsViewController.didMove(toParent: suggestionsWindow?.rootViewController!)
+
+        done.toggle()
+
+//        guard let parent = parent else { return }
+//        parent.addChild(suggestionsViewController)
+//        parent.view.addSubview(suggestionsViewController.view)
+//        suggestionsViewController.didMove(toParent: parent)
+
+//        guard let suggestionView = suggestionsViewController.view else { return }
+//        suggestionView.bottomAnchor.constraint(equalTo: composerView.topAnchor).isActive = true
+//        suggestionView.centerXAnchor.constraint(equalTo: composerView.centerXAnchor).isActive = true
+//        suggestionView.leadingAnchor.constraint(equalTo: composerView.layoutMarginsGuide.leadingAnchor).isActive = true
+//        suggestionView.trailingAnchor.constraint(equalTo: composerView.layoutMarginsGuide.trailingAnchor).isActive = true
     }
 
     func dismissSuggestionsViewController() {
@@ -303,4 +340,8 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
         imageAttachments.append(selectedImage)
         picker.dismiss(animated: true, completion: nil)
     }
+}
+
+class NoKeyWindow: UIWindow {
+    override func makeKey() {}
 }
