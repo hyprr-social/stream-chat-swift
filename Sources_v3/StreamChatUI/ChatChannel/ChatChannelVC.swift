@@ -7,6 +7,46 @@ import UIKit
 
 open class ChatChannelVC<ExtraData: ExtraDataTypes>: ChatVC<ExtraData> {
     // MARK: - Properties
+    
+    public var controller: _ChatChannelController<ExtraData>!
+
+    public private(set) lazy var messageInputAccessoryViewController: MessageComposerInputAccessoryViewController<ExtraData> = {
+        let inputAccessoryVC = MessageComposerInputAccessoryViewController<ExtraData>()
+        
+        // `inputAccessoryViewController` is part of `_UIKeyboardWindowScene` so we need to manually pass
+        // tintColor down that `inputAccessoryViewController` view hierarchy.
+        inputAccessoryVC.view.tintColor = view.tintColor
+        inputAccessoryVC.suggestionsPresenter = self
+        
+        return inputAccessoryVC
+    }()
+
+    public private(set) lazy var suggestionsViewController: MessageComposerSuggestionsViewController<ExtraData> = {
+        uiConfig.messageComposer.suggestionsViewController.init()
+    }()
+
+    public private(set) lazy var collectionViewLayout: ChatChannelCollectionViewLayout = uiConfig
+        .messageList
+        .collectionLayout
+        .init()
+    public private(set) lazy var collectionView: UICollectionView = {
+        let collection = uiConfig.messageList.collectionView.init(layout: collectionViewLayout)
+        collection.register(
+            СhatIncomingMessageCollectionViewCell<ExtraData>.self,
+            forCellWithReuseIdentifier: СhatIncomingMessageCollectionViewCell<ExtraData>.reuseId
+        )
+        collection.register(
+            СhatOutgoingMessageCollectionViewCell<ExtraData>.self,
+            forCellWithReuseIdentifier: СhatOutgoingMessageCollectionViewCell<ExtraData>.reuseId
+        )
+        collection.showsHorizontalScrollIndicator = false
+        collection.dataSource = self
+        collection.delegate = self
+        
+        return collection
+    }()
+
+    private var navbarListener: ChatChannelNavigationBarListener<ExtraData>?
 
     public private(set) lazy var router = uiConfig.navigation.channelDetailRouter.init(rootViewController: self)
     
@@ -106,5 +146,21 @@ extension ChatChannelVC: _ChatChannelControllerDelegate {
         didUpdateMessages changes: [ListChange<_ChatMessage<ExtraData>>]
     ) {
         messageList.updateMessages(with: changes)
+    }
+}
+
+// MARK: - SuggestionsPresenter
+
+extension ChatChannelVC: SuggestionsViewControllerPresenter {
+    public func presentSuggestions() {
+        addChild(suggestionsViewController)
+        view.addSubview(suggestionsViewController.view)
+        suggestionsViewController.didMove(toParent: parent)
+        suggestionsViewController.bottomAnchorView = messageInputAccessoryViewController.composerView
+    }
+
+    public func dismissSuggestionsViewController() {
+        suggestionsViewController.removeFromParent()
+        suggestionsViewController.view.removeFromSuperview()
     }
 }

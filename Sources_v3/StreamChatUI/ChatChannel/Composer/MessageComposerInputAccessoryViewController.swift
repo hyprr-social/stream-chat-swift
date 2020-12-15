@@ -26,7 +26,9 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
     // MARK: - Properties
 
     var controller: _ChatChannelController<ExtraData>!
-    
+
+    weak var suggestionsPresenter: SuggestionsViewControllerPresenter?
+
     public var state: State = .initial {
         didSet {
             updateContent()
@@ -66,8 +68,6 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
         return picker
     }()
 
-    private var suggestionsWindow: NoKeyWindow?
-    
     // MARK: Setup
     
     override open func viewDidLoad() {
@@ -124,11 +124,6 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
             composerView.container.topStackView.isHidden = false
             // update ui with message to edit
         }
-    }
-
-    override open func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        dismissSuggestionsViewController()
     }
     
     func setupInputView() {
@@ -233,40 +228,11 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
     var windowObserver: NSKeyValueObservation?
 
     func showSuggestionsViewController() {
-        guard suggestionsWindow == nil else { return }
-
-        if #available(iOS 13.0, *) {
-            let windowScene = UIApplication.shared
-                .connectedScenes
-                .first(where: { $0.activationState == .foregroundActive })
-
-            if let windowScene = windowScene as? UIWindowScene {
-                suggestionsWindow = NoKeyWindow(windowScene: windowScene)
-            }
-        } else {
-            suggestionsWindow = NoKeyWindow(frame: .zero)
-        }
-
-        suggestionsViewController.bottomAnchorView = inputView
-        
-        suggestionsWindow?.translatesAutoresizingMaskIntoConstraints = false
-        suggestionsWindow?.frame = .init(x: 0, y: 0, width: UIScreen.main.bounds.width - 16, height: 190)
-        suggestionsWindow?.setNeedsLayout()
-        suggestionsWindow?.backgroundColor = .clear
-        suggestionsWindow?.rootViewController = suggestionsViewController
-        suggestionsWindow?.rootViewController?.view.widthAnchor.constraint(
-            equalToConstant: UIScreen.main.bounds.width
-        )
-        .isActive = true
-
-        suggestionsWindow?.canResizeToFitContent = true
-        suggestionsWindow?.windowLevel = UIWindow.Level.alert
-        suggestionsWindow?.makeKeyAndVisible()
+        suggestionsPresenter?.presentSuggestions()
     }
 
     func dismissSuggestionsViewController() {
-        suggestionsViewController.removeFromParent()
-        suggestionsViewController.view.removeFromSuperview()
+        suggestionsPresenter?.dismissSuggestionsViewController()
     }
     
     // MARK: Attachments
@@ -328,6 +294,7 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
     }
 }
 
-class NoKeyWindow: UIWindow {
-    override func makeKey() {}
+public protocol SuggestionsViewControllerPresenter: class {
+    func presentSuggestions()
+    func dismissSuggestionsViewController()
 }

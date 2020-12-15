@@ -20,13 +20,12 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
         didSet {
             frameObserver = bottomAnchorView?.observe(
                 \.bounds,
-                options: [.new, .initial],
-                changeHandler: { [weak self] view, change in
+                options: [.new],
+                changeHandler: { [weak self] bottomAnchoredView, change in
                     DispatchQueue.main.async {
-                        guard let self = self, let window = self.view.window else { return }
-                        let newFrame = view.convert(change.newValue!, to: nil)
-                        window.frame.origin.y = newFrame.minY - window.frame.height - 10
-                        window.frame.origin.x = view.window!.frame.minX
+                        guard let self = self else { return }
+                        let newFrame = bottomAnchoredView.convert(change.newValue!, to: nil)
+                        self.view.frame.origin.y = newFrame.minY - self.view.frame.height
                     }
                 }
             )
@@ -45,7 +44,6 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
 
     override open func viewDidLoad() {
         super.viewDidLoad()
-        view.embed(collectionView)
     }
 
     override open func setUp() {
@@ -67,7 +65,7 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
             changeHandler: { [weak self] _, change in
                 DispatchQueue.main.async {
                     guard let self = self, let newSize = change.newValue else { return }
-                    self.heightConstraint?.constant = newSize.height
+                    self.view.frame.size = newSize
                     self.view.setNeedsLayout()
                 }
             }
@@ -80,13 +78,7 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
     }
 
     override public func setUpLayout() {
-        view.translatesAutoresizingMaskIntoConstraints = false
-
-        heightConstraint = collectionView.heightAnchor.constraint(equalToConstant: 0)
-
-        let constraints = [heightConstraint].compactMap { $0 }
-
-        NSLayoutConstraint.activate(constraints)
+        view.embed(collectionView)
         updateContent()
     }
 
