@@ -20,11 +20,11 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
         didSet {
             frameObserver = bottomAnchorView?.observe(
                 \.bounds,
-                options: [.new],
+                options: [.new, .initial],
                 changeHandler: { [weak self] bottomAnchoredView, change in
                     DispatchQueue.main.async {
-                        guard let self = self else { return }
-                        let newFrame = bottomAnchoredView.convert(change.newValue!, to: nil)
+                        guard let self = self, let changedFrame = change.newValue else { return }
+                        let newFrame = bottomAnchoredView.convert(changedFrame, to: nil)
                         self.view.frame.origin.y = newFrame.minY - self.view.frame.height
                     }
                 }

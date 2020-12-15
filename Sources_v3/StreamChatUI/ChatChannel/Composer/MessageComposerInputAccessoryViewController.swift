@@ -56,10 +56,6 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
         composerView.messageInputView.textView
     }
     
-    public private(set) lazy var suggestionsViewController: MessageComposerSuggestionsViewController<ExtraData> = {
-        uiConfig.messageComposer.suggestionsViewController.init()
-    }()
-    
     public private(set) lazy var imagePicker: UIImagePickerController = {
         let picker = UIImagePickerController()
         picker.mediaTypes = ["public.image", "public.movie"]
@@ -224,8 +220,6 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
     }
     
     // MARK: Suggestions
-
-    var windowObserver: NSKeyValueObservation?
 
     func showSuggestionsViewController() {
         suggestionsPresenter?.presentSuggestions()
