@@ -5,11 +5,27 @@
 import StreamChat
 import UIKit
 
+public protocol SuggestionsViewControllerPresenter: class {
+    func presentSuggestions(with configuration: SuggestionsConfiguration)
+    func dismissSuggestionsViewController()
+}
+
+public enum SuggestionsConfiguration {
+    case mention
+    case command
+}
+
 open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: ViewController,
     UIConfigProvider,
     UICollectionViewDelegate,
     UICollectionViewDataSource {
     // MARK: - Property
+
+    public var configuration: SuggestionsConfiguration! {
+        didSet {
+            updateContent()
+        }
+    }
 
     private var collectionViewHeightObserver: NSKeyValueObservation?
     private var frameObserver: NSKeyValueObservation?
@@ -49,8 +65,8 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
         view.addSubview(collectionView)
         collectionView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
         collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-        collectionView.leftAnchor.constraint(equalTo: view.layoutMarginsGuide.leftAnchor).isActive = true
-        collectionView.rightAnchor.constraint(equalTo: view.layoutMarginsGuide.rightAnchor).isActive = true
+        collectionView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor).isActive = true
+        collectionView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor).isActive = true
 
         collectionViewHeightObserver = collectionView.observe(
             \.contentSize,
@@ -87,19 +103,7 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
 
     // MARK: - UICollectionView
 
-    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        3 // uiConfig.commandIcons.count
-    }
-
-    public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        //        let cell = collectionView.dequeueReusableCell(
-        //            withReuseIdentifier: MessageComposerCommandCollectionViewCell<ExtraData>.reuseId,
-        //            for: indexPath
-        //        ) as! MessageComposerCommandCollectionViewCell<ExtraData>
-        //
-        //        cell.uiConfig = uiConfig
-        //        cell.commandView.content = ("Giphy", "/giphy [query]", UIImage(named: "command_giphy", in: .streamChatUI))
-
+    private func createMentionCell(for indexPath: IndexPath) -> MessageComposerMentionCollectionViewCell<ExtraData> {
         let cell = collectionView.dequeueReusableCell(
             withReuseIdentifier: MessageComposerMentionCollectionViewCell<ExtraData>.reuseId,
             for: indexPath
@@ -107,7 +111,32 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
 
         cell.uiConfig = uiConfig
         cell.mentionView.content = ("Damian", "@damian", UIImage(named: "pattern1", in: .streamChatUI), false)
-
         return cell
+    }
+
+    private func createCommandCell(for indexPath: IndexPath) -> MessageComposerCommandCollectionViewCell<ExtraData> {
+        let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: MessageComposerCommandCollectionViewCell<ExtraData>.reuseId,
+            for: indexPath
+        ) as! MessageComposerCommandCollectionViewCell<ExtraData>
+
+        cell.uiConfig = uiConfig
+        cell.commandView.content = ("Giphy", "/giphy [query]", UIImage(named: "command_giphy", in: .streamChatUI))
+        return cell
+    }
+
+    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        3 // uiConfig.commandIcons.count
+    }
+
+    public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        switch configuration {
+        case .command:
+            return createCommandCell(for: indexPath)
+        case .mention:
+            return createMentionCell(for: indexPath)
+        default:
+            return createMentionCell(for: indexPath)
+        }
     }
 }

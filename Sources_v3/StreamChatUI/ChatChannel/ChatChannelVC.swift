@@ -152,7 +152,8 @@ extension ChatChannelVC: _ChatChannelControllerDelegate {
 // MARK: - SuggestionsPresenter
 
 extension ChatChannelVC: SuggestionsViewControllerPresenter {
-    public func presentSuggestions() {
+    public func presentSuggestions(with configuration: SuggestionsConfiguration) {
+        suggestionsViewController.configuration = configuration
         addChild(suggestionsViewController)
         view.addSubview(suggestionsViewController.view)
         suggestionsViewController.didMove(toParent: parent)

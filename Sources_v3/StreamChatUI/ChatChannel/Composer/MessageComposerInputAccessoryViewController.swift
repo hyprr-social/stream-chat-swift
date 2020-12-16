@@ -102,8 +102,12 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
             composerView.messageInputView.setSlashCommandViews(hidden: false)
             dismissSuggestionsViewController()
         case .suggestions:
-            showSuggestionsViewController()
-        case let .reply(messageToReply):
+            showSuggestionsViewController(with: .command)
+        case .forceShrinkedInput:
+            composerView.attachmentButton.isHidden = false
+            composerView.commandsButton.isHidden = false
+            composerView.shrinkInputButton.isHidden = true
+        case .reply:
             composerView.titleLabel.text = L10n.Composer.Title.reply
             let image = UIImage(named: "replyArrow", in: .streamChatUI)?
                 .tinted(with: uiConfig.colorPalette.messageComposerStateIcon)
@@ -221,8 +225,8 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
     
     // MARK: Suggestions
 
-    func showSuggestionsViewController() {
-        suggestionsPresenter?.presentSuggestions()
+    func showSuggestionsViewController(with configuration: SuggestionsConfiguration) {
+        suggestionsPresenter?.presentSuggestions(with: configuration)
     }
 
     func dismissSuggestionsViewController() {
@@ -247,7 +251,11 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
     
     func promptSuggestionIfNeeded() {
         if textView.text == "/" {
-            showSuggestionsViewController()
+            showSuggestionsViewController(with: .command)
+        } else if textView.text == "@" {
+            showSuggestionsViewController(with: .mention)
+        } else {
+            dismissSuggestionsViewController()
         }
     }
     
@@ -286,9 +294,4 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
         imageAttachments.append(selectedImage)
         picker.dismiss(animated: true, completion: nil)
     }
-}
-
-public protocol SuggestionsViewControllerPresenter: class {
-    func presentSuggestions()
-    func dismissSuggestionsViewController()
 }
