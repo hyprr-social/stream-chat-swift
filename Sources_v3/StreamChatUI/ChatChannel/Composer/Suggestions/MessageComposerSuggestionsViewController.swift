@@ -22,6 +22,7 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
         .messageComposer
         .suggestionsCollectionView
         .init(layout: uiConfig.messageComposer.suggestionsCollectionViewLayout.init())
+        .withoutAutoresizingMaskConstraints
 
     // MARK: - Overrides
 
@@ -45,8 +46,12 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
     }
 
     override public func setUpLayout() {
-        view.embed(collectionView)
-        view.autoresizingMask = [.flexibleLeftMargin, .flexibleRightMargin, .flexibleBottomMargin]
+        view.addSubview(collectionView)
+        collectionView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        collectionView.leftAnchor.constraint(equalTo: view.layoutMarginsGuide.leftAnchor).isActive = true
+        collectionView.rightAnchor.constraint(equalTo: view.layoutMarginsGuide.rightAnchor).isActive = true
+
         collectionViewHeightObserver = collectionView.observe(
             \.contentSize,
             options: [.new],
