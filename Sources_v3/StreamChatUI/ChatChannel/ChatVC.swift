@@ -27,6 +27,10 @@ open class ChatVC<ExtraData: ExtraDataTypes>: ViewController,
         return inputAccessoryVC
     }()
 
+    public private(set) lazy var suggestionsViewController: MessageComposerSuggestionsViewController<ExtraData> = {
+        uiConfig.messageComposer.suggestionsViewController.init()
+    }()
+
     public private(set) lazy var messageList = uiConfig
         .messageList
         .messageListVC
@@ -49,7 +53,7 @@ open class ChatVC<ExtraData: ExtraDataTypes>: ViewController,
 
     override open func setUp() {
         super.setUp()
-
+        messageInputAccessoryViewController.suggestionsPresenter = self
         messageInputAccessoryViewController.controller = channelController
         messageList.delegate = .wrap(self)
         messageList.dataSource = .wrap(self)
@@ -155,5 +159,24 @@ open class ChatVC<ExtraData: ExtraDataTypes>: ViewController,
 
     public func chatMessageListVC(_ vc: ChatMessageListVC<ExtraData>, didInlineRepliedTo message: _ChatMessage<ExtraData>) {
         messageInputAccessoryViewController.state = .reply(message)
+    }
+}
+
+// MARK: - SuggestionsPresenter
+
+extension ChatVC: SuggestionsViewControllerPresenter {
+    public func presentSuggestions(with configuration: SuggestionsConfiguration) {
+        suggestionsViewController.configuration = configuration
+        let array = Array(channelController.channel!.cachedMembers)
+        suggestionsViewController.chatMembers = array as! [SuggestionItem]
+        addChild(suggestionsViewController)
+        view.addSubview(suggestionsViewController.view)
+        suggestionsViewController.didMove(toParent: parent)
+        suggestionsViewController.bottomAnchorView = messageInputAccessoryViewController.composerView
+    }
+
+    public func dismissSuggestionsViewController() {
+        suggestionsViewController.removeFromParent()
+        suggestionsViewController.view.removeFromSuperview()
     }
 }

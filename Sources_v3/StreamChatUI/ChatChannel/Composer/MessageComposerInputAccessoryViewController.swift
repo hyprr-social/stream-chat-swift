@@ -103,10 +103,6 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
             dismissSuggestionsViewController()
         case .suggestions:
             showSuggestionsViewController(with: .command(query: ""))
-        case .forceShrinkedInput:
-            composerView.attachmentButton.isHidden = false
-            composerView.commandsButton.isHidden = false
-            composerView.shrinkInputButton.isHidden = true
         case .reply:
             composerView.titleLabel.text = L10n.Composer.Title.reply
             let image = UIImage(named: "replyArrow", in: .streamChatUI)?
@@ -114,7 +110,6 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
             composerView.stateIcon.image = image
             composerView.container.topStackView.isHidden = false
             composerView.replyView.isHidden = false
-            composerView.replyView.message = messageToReply
         case .edit:
             composerView.sendButton.mode = .edit
             composerView.titleLabel.text = L10n.Composer.Title.edit
