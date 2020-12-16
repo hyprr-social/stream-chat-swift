@@ -15,11 +15,33 @@ public enum SuggestionsConfiguration {
     case command
 }
 
+public protocol SuggestionItem {
+    var title: String { get }
+    var subtitle: String { get }
+    var imageUrl: URL? { get }
+}
+
+extension ChatChannelMember: SuggestionItem {
+    public var title: String {
+        name!
+    }
+
+    public var subtitle: String {
+        id
+    }
+
+    public var imageUrl: URL? {
+        imageURL
+    }
+}
+
 open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: ViewController,
     UIConfigProvider,
     UICollectionViewDelegate,
     UICollectionViewDataSource {
     // MARK: - Property
+
+    public var chatMembers: [SuggestionItem]?
 
     public var configuration: SuggestionsConfiguration! {
         didSet {
@@ -73,9 +95,14 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
             options: [.new],
             changeHandler: { [weak self] _, change in
                 DispatchQueue.main.async {
-                    guard let self = self, let newSize = change.newValue else { return }
-                    self.view.frame.size.height = newSize.height
-                    self.updateViewFrame()
+                    guard let newSize = change.newValue, newSize.height < 300 else {
+                        // TODO: Compute size better according to 4 cells.
+                        self?.view.frame.size.height = 300
+                        self?.updateViewFrame()
+                        return
+                    }
+                    self?.view.frame.size.height = newSize.height
+                    self?.updateViewFrame()
                 }
             }
         )
@@ -110,7 +137,12 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
         ) as! MessageComposerMentionCollectionViewCell<ExtraData>
 
         cell.uiConfig = uiConfig
-        cell.mentionView.content = ("Damian", "@damian", UIImage(named: "pattern1", in: .streamChatUI), false)
+        cell.mentionView.content = (
+            chatMembers![indexPath.row].title,
+            "@" + chatMembers![indexPath.row].subtitle,
+            UIImage(named: "pattern1", in: .streamChatUI),
+            false
+        )
         return cell
     }
 
@@ -126,7 +158,7 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
     }
 
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        3 // uiConfig.commandIcons.count
+        chatMembers?.count ?? 0
     }
 
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {

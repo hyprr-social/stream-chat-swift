@@ -154,6 +154,8 @@ extension ChatChannelVC: _ChatChannelControllerDelegate {
 extension ChatChannelVC: SuggestionsViewControllerPresenter {
     public func presentSuggestions(with configuration: SuggestionsConfiguration) {
         suggestionsViewController.configuration = configuration
+        let array = Array(controller.channel!.cachedMembers)
+        suggestionsViewController.chatMembers = array as! [SuggestionItem]
         addChild(suggestionsViewController)
         view.addSubview(suggestionsViewController.view)
         suggestionsViewController.didMove(toParent: parent)
