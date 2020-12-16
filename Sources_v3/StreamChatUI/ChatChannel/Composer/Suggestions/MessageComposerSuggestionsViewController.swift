@@ -182,4 +182,15 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
             return createMentionCell(for: indexPath)
         }
     }
+
+    public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        switch configuration {
+        case .command:
+            let cell = createCommandCell(for: indexPath)
+        case .mention:
+            let cell = createMentionCell(for: indexPath)
+        default:
+            let cell = createMentionCell(for: indexPath)
+        }
+    }
 }
