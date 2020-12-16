@@ -102,7 +102,7 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
             composerView.messageInputView.setSlashCommandViews(hidden: false)
             dismissSuggestionsViewController()
         case .suggestions:
-            showSuggestionsViewController(with: .command)
+            showSuggestionsViewController(with: .command(query: ""))
         case .forceShrinkedInput:
             composerView.attachmentButton.isHidden = false
             composerView.commandsButton.isHidden = false
@@ -249,11 +249,11 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
     
     // MARK: UITextView
     
-    func promptSuggestionIfNeeded() {
-        if textView.text == "/" {
-            showSuggestionsViewController(with: .command)
-        } else if textView.text == "@" {
-            showSuggestionsViewController(with: .mention)
+    func promptSuggestionIfNeeded(with query: String) {
+        if textView.text.contains("/") {
+            showSuggestionsViewController(with: .command(query: query))
+        } else if textView.text.contains("@") {
+            showSuggestionsViewController(with: .mention(query: query))
         } else {
             dismissSuggestionsViewController()
         }
@@ -280,7 +280,7 @@ open class MessageComposerInputAccessoryViewController<ExtraData: ExtraDataTypes
     public func textViewDidChange(_ textView: UITextView) {
         isEmpty = textView.text.replacingOccurrences(of: " ", with: "").isEmpty
         replaceTextWithSlashCommandViewIfNeeded()
-        promptSuggestionIfNeeded()
+        promptSuggestionIfNeeded(with: textView.text)
     }
 
     // MARK: - UIImagePickerControllerDelegate

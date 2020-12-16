@@ -11,8 +11,8 @@ public protocol SuggestionsViewControllerPresenter: class {
 }
 
 public enum SuggestionsConfiguration {
-    case mention
-    case command
+    case mention(query: String)
+    case command(query: String)
 }
 
 public protocol SuggestionItem {
@@ -45,6 +45,16 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
 
     public var configuration: SuggestionsConfiguration! {
         didSet {
+            switch configuration {
+            case let .mention(query):
+                if !query.dropFirst().isEmpty {
+                    chatMembers = chatMembers?.filter { $0.title.contains(query.dropFirst()) }
+                }
+            case .command:
+                break
+            case .none:
+                break
+            }
             updateContent()
         }
     }
@@ -111,6 +121,7 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
 
     override open func updateContent() {
         collectionView.reloadData()
+        view.layoutIfNeeded()
     }
 
     private func updateViewFrame() {
