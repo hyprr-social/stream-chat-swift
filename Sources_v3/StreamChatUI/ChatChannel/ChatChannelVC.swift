@@ -153,10 +153,11 @@ extension ChatChannelVC: _ChatChannelControllerDelegate {
 
 extension ChatChannelVC: SuggestionsViewControllerPresenter {
     public func presentSuggestions() {
+        suggestionsViewController.bottomAnchorView = messageInputAccessoryViewController.composerView
         addChild(suggestionsViewController)
         view.addSubview(suggestionsViewController.view)
+
         suggestionsViewController.didMove(toParent: parent)
-        suggestionsViewController.bottomAnchorView = messageInputAccessoryViewController.composerView
     }
 
     public func dismissSuggestionsViewController() {

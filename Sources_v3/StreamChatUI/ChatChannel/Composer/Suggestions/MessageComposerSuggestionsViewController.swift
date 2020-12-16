@@ -9,28 +9,12 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
     UIConfigProvider,
     UICollectionViewDelegate,
     UICollectionViewDataSource {
-    var heightConstraint: NSLayoutConstraint?
-
     // MARK: - Property
 
     private var collectionViewHeightObserver: NSKeyValueObservation?
     private var frameObserver: NSKeyValueObservation?
 
-    public var bottomAnchorView: UIView? {
-        didSet {
-            frameObserver = bottomAnchorView?.observe(
-                \.bounds,
-                options: [.new, .initial],
-                changeHandler: { [weak self] bottomAnchoredView, change in
-                    DispatchQueue.main.async {
-                        guard let self = self, let changedFrame = change.newValue else { return }
-                        let newFrame = bottomAnchoredView.convert(changedFrame, to: nil)
-                        self.view.frame.origin.y = newFrame.minY - self.view.frame.height
-                    }
-                }
-            )
-        }
-    }
+    public var bottomAnchorView: UIView?
 
     // MARK: - Subviews
 
@@ -38,13 +22,8 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
         .messageComposer
         .suggestionsCollectionView
         .init(layout: uiConfig.messageComposer.suggestionsCollectionViewLayout.init())
-        .withoutAutoresizingMaskConstraints
 
     // MARK: - Overrides
-
-    override open func viewDidLoad() {
-        super.viewDidLoad()
-    }
 
     override open func setUp() {
         super.setUp()
@@ -58,18 +37,6 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
             uiConfig.messageComposer.suggestionsMentionCollectionViewCell,
             forCellWithReuseIdentifier: uiConfig.messageComposer.suggestionsMentionCollectionViewCell.reuseId
         )
-        
-        collectionViewHeightObserver = collectionView.observe(
-            \.contentSize,
-            options: [.new],
-            changeHandler: { [weak self] _, change in
-                DispatchQueue.main.async {
-                    guard let self = self, let newSize = change.newValue else { return }
-                    self.view.frame.size = newSize
-                    self.view.setNeedsLayout()
-                }
-            }
-        )
     }
 
     override public func setUpAppearance() {
@@ -79,16 +46,38 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
 
     override public func setUpLayout() {
         view.embed(collectionView)
+        view.autoresizingMask = [.flexibleLeftMargin, .flexibleRightMargin, .flexibleBottomMargin]
+        collectionViewHeightObserver = collectionView.observe(
+            \.contentSize,
+            options: [.new],
+            changeHandler: { [weak self] _, change in
+                DispatchQueue.main.async {
+                    guard let self = self, let newSize = change.newValue else { return }
+                    self.view.frame.size.height = newSize.height
+                    self.updateViewFrame()
+                }
+            }
+        )
         updateContent()
-    }
-
-    override open func updateViewConstraints() {
-        super.updateViewConstraints()
-        heightConstraint?.constant = collectionView.contentSize.height
     }
 
     override open func updateContent() {
         collectionView.reloadData()
+    }
+
+    private func updateViewFrame() {
+        frameObserver = bottomAnchorView?.observe(
+            \.bounds,
+            options: [.new, .initial],
+            changeHandler: { [weak self] bottomAnchoredView, change in
+                DispatchQueue.main.async {
+                    guard let self = self, let changedFrame = change.newValue else { return }
+
+                    let newFrame = bottomAnchoredView.convert(changedFrame, to: nil)
+                    self.view.frame.origin.y = newFrame.minY - self.view.frame.height
+                }
+            }
+        )
     }
 
     // MARK: - UICollectionView
@@ -98,13 +87,13 @@ open class MessageComposerSuggestionsViewController<ExtraData: ExtraDataTypes>: 
     }
 
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-//        let cell = collectionView.dequeueReusableCell(
-//            withReuseIdentifier: MessageComposerCommandCollectionViewCell<ExtraData>.reuseId,
-//            for: indexPath
-//        ) as! MessageComposerCommandCollectionViewCell<ExtraData>
-//
-//        cell.uiConfig = uiConfig
-//        cell.commandView.content = ("Giphy", "/giphy [query]", UIImage(named: "command_giphy", in: .streamChatUI))
+        //        let cell = collectionView.dequeueReusableCell(
+        //            withReuseIdentifier: MessageComposerCommandCollectionViewCell<ExtraData>.reuseId,
+        //            for: indexPath
+        //        ) as! MessageComposerCommandCollectionViewCell<ExtraData>
+        //
+        //        cell.uiConfig = uiConfig
+        //        cell.commandView.content = ("Giphy", "/giphy [query]", UIImage(named: "command_giphy", in: .streamChatUI))
 
         let cell = collectionView.dequeueReusableCell(
             withReuseIdentifier: MessageComposerMentionCollectionViewCell<ExtraData>.reuseId,
