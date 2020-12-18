@@ -63,6 +63,7 @@ public extension UIConfig {
         public var outgoingMessageBubbleBorder: UIColor = UIColor(rgb: 0xe5e5e5)
         public var incomingMessageBubbleBackground: UIColor = .white
         public var incomingMessageBubbleBorder: UIColor = UIColor(rgb: 0xe5e5e5)
+        public var outgoingMessageErrorIndicatorTint = UIColor.streamAccentRed
 
         // MARK: - Message Composer
 
@@ -83,6 +84,15 @@ public extension UIConfig {
         public var galleryImageBackground: UIColor = .streamWhiteSmoke
         public var galleryUploadingOverlayBackground: UIColor = UIColor.black.withAlphaComponent(0.5)
         public var galleryUploadingProgressBackground: UIColor = UIColor.black.withAlphaComponent(0.6)
+        public var messageActionIconDefaultTint: UIColor = .streamGray
+        public var messageActionIconTints: [ChatMessageActionItem.Name: UIColor] = [
+            .delete: .streamAccentRed,
+            .resend: .streamAccentBlue
+        ]
+        public var messageActionTitleDefaultColor: UIColor = .streamBlack
+        public var messageActionTitleColors: [ChatMessageActionItem.Name: UIColor] = [
+            .delete: .streamAccentRed
+        ]
     }
 }
 
@@ -94,6 +104,7 @@ public extension UIConfig {
         public var channelListRouter: ChatChannelListRouter<ExtraData>.Type = ChatChannelListRouter<ExtraData>.self
         public var messageListRouter: ChatMessageListRouter<ExtraData>.Type = ChatMessageListRouter<ExtraData>.self
         public var channelDetailRouter: ChatChannelRouter<ExtraData>.Type = ChatChannelRouter<ExtraData>.self
+        public var messageActionsRouter: ChatMessageActionsRouter<ExtraData>.Type = ChatMessageActionsRouter<ExtraData>.self
     }
 }
 
@@ -148,17 +159,45 @@ public extension UIConfig {
         public var offsetToPreloadMoreMessages: CGFloat = 100
         public var messageContentView: ChatMessageContentView<ExtraData>.Type = ChatMessageContentView<ExtraData>.self
         public var messageContentSubviews = MessageContentViewSubviews()
-        public var messageAvailableReactions: [MessageReactionType] = [
+        public var messageActionsSubviews = MessageActionsSubviews()
+    }
+
+    struct MessageActionsSubviews {
+        public var reactionsView: ChatMessageReactionsView<ExtraData>.Type = ChatMessageReactionsView<ExtraData>.self
+        public var availableReactions: [MessageReactionType] = [
             .init(rawValue: "like"),
             .init(rawValue: "haha"),
             .init(rawValue: "facepalm"),
             .init(rawValue: "roar")
         ]
-        public var messageActionsView: MessageActionsView<ExtraData>.Type =
+        public var actionsView: MessageActionsView<ExtraData>.Type =
             MessageActionsView<ExtraData>.self
-        public var messageActionButton: MessageActionsView<ExtraData>.ActionButton.Type =
+        public var actionButton: MessageActionsView<ExtraData>.ActionButton.Type =
             MessageActionsView<ExtraData>.ActionButton.self
-        public var messageReactionsView: ChatMessageReactionsView<ExtraData>.Type = ChatMessageReactionsView<ExtraData>.self
+        public var actionIcons: [ChatMessageActionItem.Name: UIImage] = [
+            .inlineReply: UIImage(named: "icn_inline_reply", in: .streamChatUI)!,
+            .threadReply: UIImage(named: "icn_thread_reply", in: .streamChatUI)!,
+            .edit: UIImage(named: "icn_edit", in: .streamChatUI)!,
+            .copy: UIImage(named: "icn_copy", in: .streamChatUI)!,
+            .unblockUser: UIImage(named: "icn_block_user", in: .streamChatUI)!,
+            .blockUser: UIImage(named: "icn_block_user", in: .streamChatUI)!,
+            .muteUser: UIImage(named: "icn_mute_user", in: .streamChatUI)!,
+            .unmuteUser: UIImage(named: "icn_mute_user", in: .streamChatUI)!,
+            .delete: UIImage(named: "icn_delete", in: .streamChatUI)!,
+            .resend: UIImage(named: "icn_resend", in: .streamChatUI)!
+        ]
+        public var actionTitles: [ChatMessageActionItem.Name: String] = [
+            .inlineReply: L10n.Message.Actions.inlineReply,
+            .threadReply: L10n.Message.Actions.threadReply,
+            .edit: L10n.Message.Actions.edit,
+            .copy: L10n.Message.Actions.copy,
+            .unblockUser: L10n.Message.Actions.userUnblock,
+            .blockUser: L10n.Message.Actions.userBlock,
+            .muteUser: L10n.Message.Actions.userMute,
+            .unmuteUser: L10n.Message.Actions.userUnmute,
+            .delete: L10n.Message.Actions.delete,
+            .resend: L10n.Message.Actions.resend
+        ]
     }
 
     struct MessageContentViewSubviews {
@@ -172,6 +211,7 @@ public extension UIConfig {
             ChatMessageOnlyVisibleForCurrentUserIndicator.self
         public var threadArrowView: ChatMessageThreadArrowView<ExtraData>.Type = ChatMessageThreadArrowView<ExtraData>.self
         public var threadInfoView: ChatMessageThreadInfoView<ExtraData>.Type = ChatMessageThreadInfoView<ExtraData>.self
+        public var errorIndicatorIcon = UIImage(named: "error_indicator", in: .streamChatUI)!
     }
 
     struct MessageAttachmentViewSubviews {

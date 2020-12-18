@@ -5,103 +5,37 @@
 import UIKit
 
 public struct ChatMessageActionItem {
-    public let title: String
-    public let icon: UIImage
-    public let isDestructive: Bool
+    public let name: Name
     public let action: () -> Void
 
     public init(
-        title: String,
-        icon: UIImage,
-        isDestructive: Bool,
+        name: Name,
         action: @escaping () -> Void
     ) {
-        self.title = title
-        self.icon = icon
-        self.isDestructive = isDestructive
+        self.name = name
         self.action = action
     }
 }
 
-public extension ChatMessageActionItem {
-    static func inlineReply(action: @escaping () -> Void) -> Self {
-        .init(
-            title: L10n.Message.Actions.inlineReply,
-            icon: UIImage(named: "icn_inline_reply", in: .streamChatUI)!,
-            isDestructive: false,
-            action: action
-        )
-    }
+extension ChatMessageActionItem {
+    public struct Name: RawRepresentable, Hashable {
+        public let rawValue: String
 
-    static func threadReply(action: @escaping () -> Void) -> Self {
-        .init(
-            title: L10n.Message.Actions.threadReply,
-            icon: UIImage(named: "icn_thread_reply", in: .streamChatUI)!,
-            isDestructive: false,
-            action: action
-        )
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
     }
+}
 
-    static func edit(action: @escaping () -> Void) -> Self {
-        .init(
-            title: L10n.Message.Actions.edit,
-            icon: UIImage(named: "icn_edit", in: .streamChatUI)!,
-            isDestructive: false,
-            action: action
-        )
-    }
-
-    static func copy(action: @escaping () -> Void) -> Self {
-        .init(
-            title: L10n.Message.Actions.copy,
-            icon: UIImage(named: "icn_copy", in: .streamChatUI)!,
-            isDestructive: false,
-            action: action
-        )
-    }
-
-    static func unblockUser(action: @escaping () -> Void) -> Self {
-        .init(
-            title: L10n.Message.Actions.userUnblock,
-            icon: UIImage(named: "icn_block_user", in: .streamChatUI)!,
-            isDestructive: false,
-            action: action
-        )
-    }
-
-    static func blockUser(action: @escaping () -> Void) -> Self {
-        .init(
-            title: L10n.Message.Actions.userBlock,
-            icon: UIImage(named: "icn_block_user", in: .streamChatUI)!,
-            isDestructive: false,
-            action: action
-        )
-    }
-
-    static func muteUser(action: @escaping () -> Void) -> Self {
-        .init(
-            title: L10n.Message.Actions.userMute,
-            icon: UIImage(named: "icn_mute_user", in: .streamChatUI)!,
-            isDestructive: false,
-            action: action
-        )
-    }
-
-    static func unmuteUser(action: @escaping () -> Void) -> Self {
-        .init(
-            title: L10n.Message.Actions.userUnmute,
-            icon: UIImage(named: "icn_mute_user", in: .streamChatUI)!,
-            isDestructive: false,
-            action: action
-        )
-    }
-
-    static func delete(action: @escaping () -> Void) -> Self {
-        .init(
-            title: L10n.Message.Actions.delete,
-            icon: UIImage(named: "icn_delete", in: .streamChatUI)!,
-            isDestructive: true,
-            action: action
-        )
-    }
+public extension ChatMessageActionItem.Name {
+    static let inlineReply = Self(rawValue: "inline_reply")
+    static let threadReply = Self(rawValue: "thread_reply")
+    static let copy = Self(rawValue: "copy")
+    static let edit = Self(rawValue: "edit")
+    static let delete = Self(rawValue: "delete")
+    static let resend = Self(rawValue: "resend")
+    static let muteUser = Self(rawValue: "mute_user")
+    static let unmuteUser = Self(rawValue: "unmute_user")
+    static let blockUser = Self(rawValue: "block_user")
+    static let unblockUser = Self(rawValue: "unblock_user")
 }

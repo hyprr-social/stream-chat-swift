@@ -14,6 +14,7 @@ extension MessageActionsView {
 
         override open func defaultAppearance() {
             backgroundColor = uiConfig.colorPalette.generalBackground
+            titleLabel?.font = UIFont.preferredFont(forTextStyle: .headline).bold
             contentEdgeInsets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
             titleEdgeInsets = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0)
             contentHorizontalAlignment = .left
@@ -26,14 +27,28 @@ extension MessageActionsView {
         }
         
         override open func updateContent() {
-            setImage(actionItem?.icon, for: .normal)
-            tintColor = actionItem?.isDestructive == true ? .systemRed : .darkGray
-            imageView?.tintColor = tintColor
+            guard let name = actionItem?.name else {
+                setImage(nil, for: .normal)
+                setTitle(nil, for: .normal)
+                return
+            }
 
-            let titleColor: UIColor = actionItem?.isDestructive == true ? .systemRed : .black
-            setTitle(actionItem?.title, for: .normal)
-            titleLabel?.font = UIFont.preferredFont(forTextStyle: .headline).bold
-            setTitleColor(titleColor, for: .normal)
+            setImage(
+                uiConfig.messageList.messageActionsSubviews.actionIcons[name],
+                for: .normal
+            )
+            imageView?.tintColor = uiConfig.colorPalette.messageActionIconTints[name] ??
+                uiConfig.colorPalette.messageActionIconDefaultTint
+
+            setTitle(
+                uiConfig.messageList.messageActionsSubviews.actionTitles[name],
+                for: .normal
+            )
+            setTitleColor(
+                uiConfig.colorPalette.messageActionTitleColors[name] ??
+                    uiConfig.colorPalette.messageActionTitleDefaultColor,
+                for: .normal
+            )
         }
 
         // MARK: Actions

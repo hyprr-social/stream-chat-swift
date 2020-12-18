@@ -161,6 +161,14 @@ public class _ChatMessageController<ExtraData: ExtraDataTypes>: DataController, 
 // MARK: - Actions
 
 public extension _ChatMessageController {
+    func resendMessage(completion: ((Error?) -> Void)? = nil) {
+        messageUpdater.resendMessage(with: messageId) { error in
+            self.callback {
+                completion?(error)
+            }
+        }
+    }
+
     /// Edits the message this controller manages with the provided values.
     ///
     /// - Parameters:

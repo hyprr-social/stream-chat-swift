@@ -11,6 +11,7 @@ open class ChatMessageContentView<ExtraData: ExtraDataTypes>: View, UIConfigProv
     }
 
     public var onThreadTap: (_ChatMessageGroupPart<ExtraData>?) -> Void = { _ in }
+    public var onErrorIndicatorTap: (_ChatMessageGroupPart<ExtraData>?) -> Void = { _ in }
 
     // MARK: - Subviews
 
@@ -51,10 +52,14 @@ open class ChatMessageContentView<ExtraData: ExtraDataTypes>: View, UIConfigProv
         .init()
         .withoutAutoresizingMaskConstraints
 
+    public private(set) lazy var errorIndicator = UIButton(type: .custom)
+        .withoutAutoresizingMaskConstraints
+
     private var incomingMessageConstraints: [NSLayoutConstraint] = []
     private var outgoingMessageConstraints: [NSLayoutConstraint] = []
     private var bubbleToReactionsConstraint: NSLayoutConstraint?
     private var bubbleToMetadataConstraint: NSLayoutConstraint?
+    private var bubbleToErrorIndicatorConstraint: NSLayoutConstraint?
 
     private var incomingMessageIsThreadConstraints: [NSLayoutConstraint] = []
     private var outgoingMessageIsThreadConstraints: [NSLayoutConstraint] = []
@@ -64,6 +69,15 @@ open class ChatMessageContentView<ExtraData: ExtraDataTypes>: View, UIConfigProv
     override open func setUp() {
         super.setUp()
         threadView.addTarget(self, action: #selector(didTapOnThread), for: .touchUpInside)
+        errorIndicator.addTarget(self, action: #selector(didTapOnErrorIndicator), for: .touchUpInside)
+    }
+
+    override public func defaultAppearance() {
+        errorIndicator.tintColor = uiConfig.colorPalette.outgoingMessageErrorIndicatorTint
+        errorIndicator.setImage(
+            uiConfig.messageList.messageContentSubviews.errorIndicatorIcon,
+            for: .normal
+        )
     }
 
     override open func setUpLayout() {
@@ -73,6 +87,10 @@ open class ChatMessageContentView<ExtraData: ExtraDataTypes>: View, UIConfigProv
         addSubview(messageReactionsView)
         addSubview(threadArrowView)
         addSubview(threadView)
+        addSubview(errorIndicator)
+
+        errorIndicator.setContentCompressionResistancePriority(.required, for: .horizontal)
+        errorIndicator.setContentCompressionResistancePriority(.required, for: .vertical)
 
         incomingMessageIsThreadConstraints = [
             threadView.bottomAnchor.constraint(equalTo: bottomAnchor),
@@ -91,9 +109,8 @@ open class ChatMessageContentView<ExtraData: ExtraDataTypes>: View, UIConfigProv
             authorAvatarView.bottomAnchor.constraint(equalTo: bottomAnchor),
             
             messageReactionsView.topAnchor.constraint(equalTo: topAnchor),
-            messageReactionsView.bottomAnchor.constraint(equalTo: messageBubbleView.topAnchor),
             
-            messageBubbleView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            messageBubbleView.trailingAnchor.constraint(equalTo: trailingAnchor).with(priority: .defaultHigh),
             messageBubbleView.topAnchor.constraint(equalTo: topAnchor).with(priority: .defaultHigh),
             messageBubbleView.bottomAnchor.constraint(equalTo: bottomAnchor).with(priority: .defaultHigh),
             
@@ -104,7 +121,10 @@ open class ChatMessageContentView<ExtraData: ExtraDataTypes>: View, UIConfigProv
             threadArrowView.topAnchor.constraint(equalTo: messageBubbleView.centerYAnchor),
             threadArrowView.bottomAnchor.constraint(equalTo: threadView.centerYAnchor),
             
-            threadView.topAnchor.constraint(equalToSystemSpacingBelow: messageBubbleView.bottomAnchor, multiplier: 1)
+            threadView.topAnchor.constraint(equalToSystemSpacingBelow: messageBubbleView.bottomAnchor, multiplier: 1),
+            
+            errorIndicator.bottomAnchor.constraint(equalTo: messageBubbleView.bottomAnchor),
+            errorIndicator.trailingAnchor.constraint(equalTo: trailingAnchor)
         ])
 
         incomingMessageConstraints = [
@@ -132,6 +152,9 @@ open class ChatMessageContentView<ExtraData: ExtraDataTypes>: View, UIConfigProv
         bubbleToMetadataConstraint = messageMetadataView.topAnchor.constraint(
             equalToSystemSpacingBelow: messageBubbleView.bottomAnchor,
             multiplier: 1
+        )
+        bubbleToErrorIndicatorConstraint = messageBubbleView.trailingAnchor.constraint(
+            equalTo: errorIndicator.centerXAnchor
         )
     }
 
@@ -197,15 +220,26 @@ open class ChatMessageContentView<ExtraData: ExtraDataTypes>: View, UIConfigProv
             toDeactivate.append(bubbleToMetadataConstraint!)
         }
 
+        if message?.lastActionFailed == true {
+            toActivate.append(bubbleToErrorIndicatorConstraint!)
+        } else {
+            toDeactivate.append(bubbleToErrorIndicatorConstraint!)
+        }
+
         NSLayoutConstraint.deactivate(toDeactivate)
         NSLayoutConstraint.activate(toActivate)
 
         authorAvatarView.isVisible = !isOutgoing && message?.isLastInGroup == true
         messageMetadataView.isVisible = bubbleToMetadataConstraint?.isActive ?? false
         messageReactionsView.isVisible = bubbleToReactionsConstraint?.isActive ?? false
+        errorIndicator.isVisible = message?.lastActionFailed ?? false
     }
 
     // MARK: - Actions
+
+    @objc open func didTapOnErrorIndicator() {
+        onErrorIndicatorTap(message)
+    }
 
     @objc func didTapOnThread() {
         onThreadTap(message)
